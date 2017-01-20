@@ -1,0 +1,640 @@
+type WorkflowType; distinct WorkflowType WT[6];
+
+type Action;
+distinct Action ExcelPrint, CreateContentOnline, OpenAttachment, FindAndRecordInfo, Send, Forward, AttachedFile, ChangeDocument, ReceiveEmail, Reply, ExcelEvent, CreateEmail, FindInfo, SaveAttachment, SaveContent, Invalid, Start;
+
+type Position;
+distinct Position START, MIDDLE, END, Invalid_Position;
+random WorkflowType cur_wf_type(Timestep t) ~ 
+	if position(t) == START then UniformChoice({wt for WorkflowType wt})
+	else
+		cur_wf_type(prev(t))
+;
+
+random Position position(Timestep t) ~ 
+	if t == @0 then START
+	else if position(prev(t)) == START then MIDDLE
+	else if position(prev(t)) == MIDDLE then
+		if cur_wf_type(prev(t)) == WT[0] then
+			if state(t) == ReceiveEmail then
+				Categorical({MIDDLE -> 0.0153846153846, END -> 0.984615384615})
+			else if state(t) == Reply then
+				Categorical({MIDDLE -> 0.989528795812, END -> 0.0104712041885})
+			else if state(t) == Send then
+				Categorical({MIDDLE -> 0.79679144385, END -> 0.20320855615})
+			else Categorical({MIDDLE -> 0.99, END -> 0.01})
+		else if cur_wf_type(prev(t)) == WT[1] then
+			if state(t) == ReceiveEmail then
+				Categorical({MIDDLE -> 0.0281690140845, END -> 0.971830985915})
+			else if state(t) == Send then
+				Categorical({MIDDLE -> 0.731707317073, END -> 0.268292682927})
+			else Categorical({MIDDLE -> 0.99, END -> 0.01})
+		else if cur_wf_type(prev(t)) == WT[2] then
+			if state(t) == ReceiveEmail then
+				Categorical({MIDDLE -> 0.415094339623, END -> 0.584905660377})
+			else if state(t) == Send then
+				Categorical({MIDDLE -> 0.785714285714, END -> 0.214285714286})
+			else Categorical({MIDDLE -> 0.99, END -> 0.01})
+		else if cur_wf_type(prev(t)) == WT[3] then
+			if state(t) == Send then
+				Categorical({MIDDLE -> 0.905109489051, END -> 0.0948905109489})
+			else if state(t) == ReceiveEmail then
+				Categorical({MIDDLE -> 0.448453608247, END -> 0.551546391753})
+			else Categorical({MIDDLE -> 0.99, END -> 0.01})
+		else if cur_wf_type(prev(t)) == WT[4] then
+			if state(t) == Send then
+				Categorical({MIDDLE -> 0.536585365854, END -> 0.463414634146})
+			else if state(t) == ReceiveEmail then
+				Categorical({MIDDLE -> 0.0, END -> 1.0})
+			else Categorical({MIDDLE -> 0.99, END -> 0.01})
+		else if cur_wf_type(prev(t)) == WT[5] then
+			if state(t) == ReceiveEmail then
+				Categorical({MIDDLE -> 0.0526315789474, END -> 0.947368421053})
+			else if state(t) == Send then
+				Categorical({MIDDLE -> 0.818181818182, END -> 0.181818181818})
+			else Categorical({MIDDLE -> 0.99, END -> 0.01})
+		else Invalid_Position
+	else
+		START
+;
+random Action state(Timestep t) ~
+	if t == @0 | position(prev(t)) == END then ReceiveEmail
+	else if cur_wf_type(t) == WT[0] then
+		if state(prev(t)) == Reply then
+				Categorical({ChangeDocument -> 0.015873015873, AttachedFile -> 0.100529100529, FindInfo -> 0.640211640212, Send -> 0.238095238095, ExcelEvent -> 0.00529100529101, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Forward -> 0.01, ReceiveEmail -> 0.01, Reply -> 0.01, CreateEmail -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == OpenAttachment then
+				Categorical({Send -> 1.0, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ChangeDocument -> 0.01, ReceiveEmail -> 0.01, Reply -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == Send then
+				Categorical({ExcelEvent -> 0.00671140939597, Reply -> 0.00671140939597, ReceiveEmail -> 0.409395973154, FindInfo -> 0.577181208054, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Send -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ChangeDocument -> 0.01, CreateEmail -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == AttachedFile then
+				Categorical({OpenAttachment -> 0.047619047619, ExcelEvent -> 0.047619047619, Send -> 0.904761904762, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, FindAndRecordInfo -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ChangeDocument -> 0.01, ReceiveEmail -> 0.01, Reply -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == ChangeDocument then
+				Categorical({FindInfo -> 0.4, ExcelEvent -> 0.15, AttachedFile -> 0.05, Reply -> 0.15, ChangeDocument -> 0.25, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Send -> 0.01, Forward -> 0.01, ReceiveEmail -> 0.01, CreateEmail -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == ReceiveEmail then
+				Categorical({ExcelEvent -> 0.0432432432432, FindInfo -> 0.854054054054, Reply -> 0.102702702703, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Send -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ChangeDocument -> 0.01, ReceiveEmail -> 0.01, CreateEmail -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == Forward then
+				Categorical({Reply -> 1.0, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Send -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ChangeDocument -> 0.01, ReceiveEmail -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == ExcelEvent then
+				Categorical({AttachedFile -> 0.00296735905045, FindInfo -> 0.789317507418, Send -> 0.00296735905045, Reply -> 0.0474777448071, ExcelEvent -> 0.157270029674, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Forward -> 0.01, ChangeDocument -> 0.01, ReceiveEmail -> 0.01, CreateEmail -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == FindInfo then
+				Categorical({ReceiveEmail -> 0.131455399061, Send -> 0.189358372457, ChangeDocument -> 0.018779342723, ExcelEvent -> 0.422535211268, Reply -> 0.234741784038, Forward -> 0.00156494522692, CreateEmail -> 0.00156494522692, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, AttachedFile -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == CreateEmail then
+				Categorical({Reply -> 1.0, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Send -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ChangeDocument -> 0.01, ReceiveEmail -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else Invalid
+	else if cur_wf_type(t) == WT[1] then
+		if state(prev(t)) == OpenAttachment then
+				Categorical({ChangeDocument -> 0.928571428571, Send -> 0.0357142857143, ReceiveEmail -> 0.0357142857143, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, Reply -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == Send then
+				Categorical({ChangeDocument -> 0.233333333333, ReceiveEmail -> 0.6, FindInfo -> 0.166666666667, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Send -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, Reply -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == ExcelEvent then
+				Categorical({Reply -> 0.6, FindInfo -> 0.2, ChangeDocument -> 0.2, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Send -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ReceiveEmail -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == AttachedFile then
+				Categorical({OpenAttachment -> 0.025641025641, Send -> 0.923076923077, ChangeDocument -> 0.0512820512821, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, FindAndRecordInfo -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ReceiveEmail -> 0.01, Reply -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == ChangeDocument then
+				Categorical({ReceiveEmail -> 0.0308641975309, FindInfo -> 0.0617283950617, Send -> 0.0123456790123, Reply -> 0.197530864198, ChangeDocument -> 0.666666666667, SaveAttachment -> 0.0123456790123, ExcelEvent -> 0.0185185185185, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, CreateEmail -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == ReceiveEmail then
+				Categorical({Reply -> 0.0238095238095, SaveAttachment -> 0.285714285714, OpenAttachment -> 0.619047619048, ChangeDocument -> 0.047619047619, FindInfo -> 0.0238095238095, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, FindAndRecordInfo -> 0.01, Send -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ReceiveEmail -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == Reply then
+				Categorical({AttachedFile -> 0.951219512195, Send -> 0.0487804878049, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Forward -> 0.01, ChangeDocument -> 0.01, ReceiveEmail -> 0.01, Reply -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == FindInfo then
+				Categorical({Reply -> 0.263157894737, OpenAttachment -> 0.0526315789474, ExcelEvent -> 0.105263157895, ChangeDocument -> 0.210526315789, ReceiveEmail -> 0.368421052632, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, FindAndRecordInfo -> 0.01, Send -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == SaveAttachment then
+				Categorical({FindInfo -> 0.142857142857, ChangeDocument -> 0.857142857143, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Send -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ReceiveEmail -> 0.01, Reply -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else Invalid
+	else if cur_wf_type(t) == WT[2] then
+		if state(prev(t)) == ExcelPrint then
+				Categorical({FindAndRecordInfo -> 0.172413793103, ChangeDocument -> 0.655172413793, Reply -> 0.137931034483, AttachedFile -> 0.0344827586207, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, Send -> 0.01, Forward -> 0.01, ReceiveEmail -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == OpenAttachment then
+				Categorical({Send -> 1.0, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ChangeDocument -> 0.01, ReceiveEmail -> 0.01, Reply -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == FindAndRecordInfo then
+				Categorical({FindAndRecordInfo -> 0.537414965986, Reply -> 0.149659863946, ReceiveEmail -> 0.102040816327, AttachedFile -> 0.0340136054422, Send -> 0.0204081632653, ChangeDocument -> 0.0408163265306, ExcelPrint -> 0.115646258503, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, Forward -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == Send then
+				Categorical({ChangeDocument -> 0.151515151515, ReceiveEmail -> 0.515151515152, FindAndRecordInfo -> 0.333333333333, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, Send -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, Reply -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == AttachedFile then
+				Categorical({ExcelPrint -> 0.0238095238095, OpenAttachment -> 0.0238095238095, ChangeDocument -> 0.0238095238095, FindAndRecordInfo -> 0.0714285714286, Send -> 0.857142857143, CreateContentOnline -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ReceiveEmail -> 0.01, Reply -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == ChangeDocument then
+				Categorical({ReceiveEmail -> 0.013698630137, Reply -> 0.191780821918, FindAndRecordInfo -> 0.178082191781, AttachedFile -> 0.041095890411, ExcelPrint -> 0.027397260274, ChangeDocument -> 0.547945205479, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, Send -> 0.01, Forward -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == Reply then
+				Categorical({FindAndRecordInfo -> 0.116279069767, Reply -> 0.0232558139535, Send -> 0.046511627907, ChangeDocument -> 0.046511627907, AttachedFile -> 0.767441860465, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, Forward -> 0.01, ReceiveEmail -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == ReceiveEmail then
+				Categorical({ExcelPrint -> 0.214285714286, Reply -> 0.047619047619, FindAndRecordInfo -> 0.738095238095, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, Send -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ChangeDocument -> 0.01, ReceiveEmail -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else Invalid
+	else if cur_wf_type(t) == WT[3] then
+		if state(prev(t)) == Send then
+				Categorical({ReceiveEmail -> 0.701612903226, Reply -> 0.120967741935, FindInfo -> 0.177419354839, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Send -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ChangeDocument -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == Forward then
+				Categorical({Send -> 0.909090909091, Forward -> 0.0909090909091, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, AttachedFile -> 0.01, ChangeDocument -> 0.01, ReceiveEmail -> 0.01, Reply -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == ChangeDocument then
+				Categorical({FindInfo -> 0.166666666667, ReceiveEmail -> 0.166666666667, Send -> 0.166666666667, ChangeDocument -> 0.5, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, Reply -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == ReceiveEmail then
+				Categorical({Send -> 0.149659863946, ChangeDocument -> 0.0136054421769, FindInfo -> 0.142857142857, ReceiveEmail -> 0.0952380952381, Forward -> 0.0612244897959, CreateEmail -> 0.0884353741497, Reply -> 0.448979591837, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, AttachedFile -> 0.01, ExcelEvent -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == Reply then
+				Categorical({ReceiveEmail -> 0.0973451327434, ExcelEvent -> 0.00884955752212, FindInfo -> 0.070796460177, Reply -> 0.0884955752212, CreateEmail -> 0.00884955752212, Forward -> 0.00884955752212, Send -> 0.716814159292, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, AttachedFile -> 0.01, ChangeDocument -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == ExcelEvent then
+				Categorical({Reply -> 0.5, FindInfo -> 0.25, Send -> 0.25, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ChangeDocument -> 0.01, ReceiveEmail -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == FindInfo then
+				Categorical({Reply -> 0.37037037037, ChangeDocument -> 0.0185185185185, ReceiveEmail -> 0.388888888889, Send -> 0.166666666667, ExcelEvent -> 0.0555555555556, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == CreateEmail then
+				Categorical({FindInfo -> 0.0714285714286, Send -> 0.928571428571, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ChangeDocument -> 0.01, ReceiveEmail -> 0.01, Reply -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else Invalid
+	else if cur_wf_type(t) == WT[4] then
+		if state(prev(t)) == Send then
+				Categorical({FindInfo -> 0.409090909091, ReceiveEmail -> 0.590909090909, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Send -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ChangeDocument -> 0.01, Reply -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == AttachedFile then
+				Categorical({Send -> 1.0, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ChangeDocument -> 0.01, ReceiveEmail -> 0.01, Reply -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == ChangeDocument then
+				Categorical({Reply -> 0.0454545454545, ChangeDocument -> 0.454545454545, FindInfo -> 0.5, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Send -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ReceiveEmail -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == ExcelEvent then
+				Categorical({ExcelEvent -> 0.0689655172414, Reply -> 0.0344827586207, ChangeDocument -> 0.0689655172414, FindInfo -> 0.827586206897, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Send -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ReceiveEmail -> 0.01, CreateEmail -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == Reply then
+				Categorical({Send -> 0.116279069767, FindInfo -> 0.813953488372, AttachedFile -> 0.0232558139535, Reply -> 0.046511627907, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Forward -> 0.01, ChangeDocument -> 0.01, ReceiveEmail -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == ReceiveEmail then
+				Categorical({FindInfo -> 0.75, ChangeDocument -> 0.075, Reply -> 0.175, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Send -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ReceiveEmail -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == FindInfo then
+				Categorical({ChangeDocument -> 0.0375939849624, ReceiveEmail -> 0.0601503759398, ExcelEvent -> 0.406015037594, Send -> 0.263157894737, Reply -> 0.233082706767, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else Invalid
+	else if cur_wf_type(t) == WT[5] then
+		if state(prev(t)) == SaveContent then
+				Categorical({ReceiveEmail -> 0.0454545454545, CreateContentOnline -> 0.0909090909091, AttachedFile -> 0.0909090909091, Reply -> 0.772727272727, ExcelPrint -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Send -> 0.01, Forward -> 0.01, ChangeDocument -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == OpenAttachment then
+				Categorical({SaveContent -> 1.0, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Send -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ChangeDocument -> 0.01, ReceiveEmail -> 0.01, Reply -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01})
+		else if state(prev(t)) == Send then
+				Categorical({CreateContentOnline -> 0.166666666667, ReceiveEmail -> 0.777777777778, Reply -> 0.0555555555556, ExcelPrint -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Send -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ChangeDocument -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == CreateContentOnline then
+				Categorical({SaveContent -> 0.8, Reply -> 0.08, ReceiveEmail -> 0.12, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Send -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ChangeDocument -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01})
+		else if state(prev(t)) == AttachedFile then
+				Categorical({Send -> 0.95, OpenAttachment -> 0.05, ExcelPrint -> 0.01, CreateContentOnline -> 0.01, FindAndRecordInfo -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ChangeDocument -> 0.01, ReceiveEmail -> 0.01, Reply -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else if state(prev(t)) == ReceiveEmail then
+				Categorical({Reply -> 0.0909090909091, CreateContentOnline -> 0.818181818182, Send -> 0.0454545454545, SaveContent -> 0.0454545454545, ExcelPrint -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Forward -> 0.01, AttachedFile -> 0.01, ChangeDocument -> 0.01, ReceiveEmail -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01})
+		else if state(prev(t)) == Reply then
+				Categorical({AttachedFile -> 0.818181818182, Send -> 0.0909090909091, CreateContentOnline -> 0.0909090909091, ExcelPrint -> 0.01, OpenAttachment -> 0.01, FindAndRecordInfo -> 0.01, Forward -> 0.01, ChangeDocument -> 0.01, ReceiveEmail -> 0.01, Reply -> 0.01, ExcelEvent -> 0.01, CreateEmail -> 0.01, FindInfo -> 0.01, SaveAttachment -> 0.01, SaveContent -> 0.01})
+		else Invalid
+	else Invalid
+;
+random Boolean valid(Timestep t) ~ 
+	if position(t) == START then true
+	else if cur_wf_type(t) == WT[0] then
+		if state(prev(t)) == Reply then
+			if state(t) == ChangeDocument & true
+				then true
+			else if state(t) == AttachedFile & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0"  & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == FindInfo & true
+				then true
+			else if state(t) == Send & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ExcelEvent & F_OUT_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0"  & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == OpenAttachment then
+			if state(t) == Send & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == Send then
+			if state(t) == ExcelEvent & F_OUT_obs(t) == FILE_OUT_obs(prev(t)) & FILE_OUT_obs(prev(t)) != "null0"  & F_obs(t) == FILE_OUT_obs(prev(t)) & FILE_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Reply & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ReceiveEmail & EMAIL_IN_From_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == FindInfo & true
+				then true
+			else false
+		else if state(prev(t)) == AttachedFile then
+			if state(t) == OpenAttachment & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ExcelEvent & F_OUT_obs(t) == F_obs(prev(t)) & F_obs(prev(t)) != "null0"  & F_OUT_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0"  & F_obs(t) == FILE_OUT_obs(prev(t)) & FILE_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Send & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == ChangeDocument then
+			if state(t) == FindInfo & true
+				then true
+			else if state(t) == ExcelEvent & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0"  & F_OUT_obs(t) == F_obs(prev(t)) & F_obs(prev(t)) != "null0"  & F_obs(t) == F_obs(prev(t)) & F_obs(prev(t)) != "null0"  & F_OUT_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == AttachedFile & F_obs(t) == F_obs(prev(t)) & F_obs(prev(t)) != "null0"  & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Reply & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ChangeDocument & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == ReceiveEmail then
+			if state(t) == ExcelEvent & true
+				then true
+			else if state(t) == FindInfo & true
+				then true
+			else if state(t) == Reply & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == Forward then
+			if state(t) == Reply & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == ExcelEvent then
+			if state(t) == AttachedFile & F_obs(t) == F_obs(prev(t)) & F_obs(prev(t)) != "null0"  & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == FindInfo & true
+				then true
+			else if state(t) == Send & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Reply & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ExcelEvent & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == FindInfo then
+			if state(t) == ReceiveEmail & true
+				then true
+			else if state(t) == Send & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ChangeDocument & true
+				then true
+			else if state(t) == ExcelEvent & true
+				then true
+			else if state(t) == Reply & true
+				then true
+			else if state(t) == Forward & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == CreateEmail & true
+				then true
+			else false
+		else if state(prev(t)) == CreateEmail then
+			if state(t) == Reply & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else false
+	else if cur_wf_type(t) == WT[1] then
+		if state(prev(t)) == OpenAttachment then
+			if state(t) == ChangeDocument & true
+				then true
+			else if state(t) == Send & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ReceiveEmail & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == Send then
+			if state(t) == ChangeDocument & F_obs(t) == F_obs(prev(t)) & F_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ReceiveEmail & EMAIL_IN_From_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == FindInfo & true
+				then true
+			else false
+		else if state(prev(t)) == ExcelEvent then
+			if state(t) == Reply & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == FindInfo & true
+				then true
+			else if state(t) == ChangeDocument & F_OUT_obs(t) == F_obs(prev(t)) & F_obs(prev(t)) != "null0"  & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == AttachedFile then
+			if state(t) == OpenAttachment & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Send & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ChangeDocument & F_obs(t) == FILE_OUT_obs(prev(t)) & FILE_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == ChangeDocument then
+			if state(t) == ReceiveEmail & EMAIL_IN_From_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == FindInfo & true
+				then true
+			else if state(t) == Send & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Reply & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ChangeDocument & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == SaveAttachment & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ExcelEvent & true
+				then true
+			else false
+		else if state(prev(t)) == ReceiveEmail then
+			if state(t) == Reply & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == SaveAttachment & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == OpenAttachment & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ChangeDocument & F_OUT_obs(t) == FILE_IN_obs(prev(t)) & FILE_IN_obs(prev(t)) != "null0"  & F_obs(t) == FILE_IN_obs(prev(t)) & FILE_IN_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == FindInfo & true
+				then true
+			else false
+		else if state(prev(t)) == Reply then
+			if state(t) == AttachedFile & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Send & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == FindInfo then
+			if state(t) == Reply & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == OpenAttachment & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ExcelEvent & true
+				then true
+			else if state(t) == ChangeDocument & true
+				then true
+			else if state(t) == ReceiveEmail & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == SaveAttachment then
+			if state(t) == FindInfo & true
+				then true
+			else if state(t) == ChangeDocument & true
+				then true
+			else false
+		else false
+	else if cur_wf_type(t) == WT[2] then
+		if state(prev(t)) == ExcelPrint then
+			if state(t) == FindAndRecordInfo & F_OUT_obs(t) == EXCEL_OUT_obs(prev(t)) & EXCEL_OUT_obs(prev(t)) != "null0"  & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ChangeDocument & true
+				then true
+			else if state(t) == Reply & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == AttachedFile & F_obs(t) == FILE_OUT_obs(prev(t)) & FILE_OUT_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == OpenAttachment then
+			if state(t) == Send & EMAIL_OUT_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == FindAndRecordInfo then
+			if state(t) == FindAndRecordInfo & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Reply & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ReceiveEmail & EMAIL_IN_From_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == AttachedFile & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0"  & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Send & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ChangeDocument & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0"  & F_OUT_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ExcelPrint & true
+				then true
+			else false
+		else if state(prev(t)) == Send then
+			if state(t) == ChangeDocument & F_OUT_obs(t) == F_obs(prev(t)) & F_obs(prev(t)) != "null0"  & F_obs(t) == FILE_OUT_obs(prev(t)) & FILE_OUT_obs(prev(t)) != "null0"  & F_OUT_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ReceiveEmail & EMAIL_IN_From_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == FindAndRecordInfo & F_OUT_obs(t) == FILE_OUT_obs(prev(t)) & FILE_OUT_obs(prev(t)) != "null0"  & F_obs(t) == FILE_OUT_obs(prev(t)) & FILE_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == AttachedFile then
+			if state(t) == ExcelPrint & PDF_OUT_obs(t) == PDF_OUT_obs(prev(t)) & PDF_OUT_obs(prev(t)) != "null0"  & EXCEL_OUT_obs(t) == EXCEL_OUT_obs(prev(t)) & EXCEL_OUT_obs(prev(t)) != "null0"  & EXCEL_OUT_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == OpenAttachment & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ChangeDocument & F_obs(t) == FILE_OUT_obs(prev(t)) & FILE_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == FindAndRecordInfo & F_obs(t) == FILE_OUT_obs(prev(t)) & FILE_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Send & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == ChangeDocument then
+			if state(t) == ReceiveEmail & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Reply & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == FindAndRecordInfo & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0"  & F_obs(t) == F_obs(prev(t)) & F_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == AttachedFile & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0"  & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ExcelPrint & PDF_OUT_obs(t) == PDF_OUT_obs(prev(t)) & PDF_OUT_obs(prev(t)) != "null0"  & EXCEL_OUT_obs(t) == EXCEL_OUT_obs(prev(t)) & EXCEL_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ChangeDocument & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == Reply then
+			if state(t) == FindAndRecordInfo & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Reply & EMAIL_IN_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Send & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ChangeDocument & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0"  & F_OUT_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == AttachedFile & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == ReceiveEmail then
+			if state(t) == ExcelPrint & true
+				then true
+			else if state(t) == Reply & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == FindAndRecordInfo & true
+				then true
+			else false
+		else false
+	else if cur_wf_type(t) == WT[3] then
+		if state(prev(t)) == Send then
+			if state(t) == ReceiveEmail & true
+				then true
+			else if state(t) == Reply & true
+				then true
+			else if state(t) == FindInfo & true
+				then true
+			else false
+		else if state(prev(t)) == Forward then
+			if state(t) == Send & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Forward & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == ChangeDocument then
+			if state(t) == FindInfo & true
+				then true
+			else if state(t) == ReceiveEmail & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Send & true
+				then true
+			else if state(t) == ChangeDocument & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == ReceiveEmail then
+			if state(t) == Send & true
+				then true
+			else if state(t) == ChangeDocument & true
+				then true
+			else if state(t) == FindInfo & true
+				then true
+			else if state(t) == ReceiveEmail & true
+				then true
+			else if state(t) == Forward & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == CreateEmail & true
+				then true
+			else if state(t) == Reply & true
+				then true
+			else false
+		else if state(prev(t)) == Reply then
+			if state(t) == ReceiveEmail & true
+				then true
+			else if state(t) == ExcelEvent & F_OUT_obs(t) == F_obs(prev(t)) & F_obs(prev(t)) != "null0"  & F_OUT_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0"  & F_obs(t) == F_obs(prev(t)) & F_obs(prev(t)) != "null0"  & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == FindInfo & true
+				then true
+			else if state(t) == Reply & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == CreateEmail & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Forward & EMAIL_IN_From_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Send & true
+				then true
+			else false
+		else if state(prev(t)) == ExcelEvent then
+			if state(t) == Reply & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == FindInfo & true
+				then true
+			else if state(t) == Send & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == FindInfo then
+			if state(t) == Reply & true
+				then true
+			else if state(t) == ChangeDocument & true
+				then true
+			else if state(t) == ReceiveEmail & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Send & true
+				then true
+			else if state(t) == ExcelEvent & true
+				then true
+			else false
+		else if state(prev(t)) == CreateEmail then
+			if state(t) == FindInfo & true
+				then true
+			else if state(t) == Send & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else false
+	else if cur_wf_type(t) == WT[4] then
+		if state(prev(t)) == Send then
+			if state(t) == FindInfo & true
+				then true
+			else if state(t) == ReceiveEmail & EMAIL_IN_From_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == AttachedFile then
+			if state(t) == Send & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == ChangeDocument then
+			if state(t) == Reply & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ChangeDocument & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == FindInfo & true
+				then true
+			else false
+		else if state(prev(t)) == ExcelEvent then
+			if state(t) == ExcelEvent & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Reply & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ChangeDocument & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0"  & F_OUT_obs(t) == F_obs(prev(t)) & F_obs(prev(t)) != "null0"  & F_obs(t) == F_obs(prev(t)) & F_obs(prev(t)) != "null0"  & F_OUT_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == FindInfo & true
+				then true
+			else false
+		else if state(prev(t)) == Reply then
+			if state(t) == Send & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == FindInfo & true
+				then true
+			else if state(t) == AttachedFile & F_obs(t) == F_obs(prev(t)) & F_obs(prev(t)) != "null0"  & F_obs(t) == F_OUT_obs(prev(t)) & F_OUT_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Reply & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == ReceiveEmail then
+			if state(t) == FindInfo & true
+				then true
+			else if state(t) == ChangeDocument & true
+				then true
+			else if state(t) == Reply & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == FindInfo then
+			if state(t) == ChangeDocument & true
+				then true
+			else if state(t) == ReceiveEmail & EMAIL_IN_From_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ExcelEvent & true
+				then true
+			else if state(t) == Send & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Reply & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else false
+	else if cur_wf_type(t) == WT[5] then
+		if state(prev(t)) == SaveContent then
+			if state(t) == ReceiveEmail & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == CreateContentOnline & true
+				then true
+			else if state(t) == AttachedFile & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & F_obs(t) == FILE_OUT_obs(prev(t)) & FILE_OUT_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Reply & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == OpenAttachment then
+			if state(t) == SaveContent & true
+				then true
+			else false
+		else if state(prev(t)) == Send then
+			if state(t) == CreateContentOnline & true
+				then true
+			else if state(t) == ReceiveEmail & true
+				then true
+			else if state(t) == Reply & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == CreateContentOnline then
+			if state(t) == SaveContent & true
+				then true
+			else if state(t) == Reply & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == ReceiveEmail & true
+				then true
+			else false
+		else if state(prev(t)) == AttachedFile then
+			if state(t) == Send & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == OpenAttachment & EMAIL_IN_Timestamp_obs(t) == EMAIL_IN_Timestamp_obs(prev(t)) & EMAIL_IN_Timestamp_obs(prev(t)) != "null0"  & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_IN_BodyBlobURN_obs(t) == EMAIL_IN_BodyBlobURN_obs(prev(t)) & EMAIL_IN_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_IN_Subject_obs(t) == EMAIL_IN_Subject_obs(prev(t)) & EMAIL_IN_Subject_obs(prev(t)) != "null0"  & EMAIL_IN_From_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0" 
+				 then true
+			else false
+		else if state(prev(t)) == ReceiveEmail then
+			if state(t) == Reply & EMAIL_IN_To_obs(t) == EMAIL_IN_To_obs(prev(t)) & EMAIL_IN_To_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == CreateContentOnline & true
+				then true
+			else if state(t) == Send & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == SaveContent & true
+				then true
+			else false
+		else if state(prev(t)) == Reply then
+			if state(t) == AttachedFile & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & F_obs(t) == FILE_OUT_obs(prev(t)) & FILE_OUT_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == Send & EMAIL_OUT_To_obs(t) == EMAIL_IN_From_obs(prev(t)) & EMAIL_IN_From_obs(prev(t)) != "null0"  & EMAIL_OUT_To_obs(t) == EMAIL_OUT_To_obs(prev(t)) & EMAIL_OUT_To_obs(prev(t)) != "null0"  & EMAIL_OUT_From_obs(t) == EMAIL_OUT_From_obs(prev(t)) & EMAIL_OUT_From_obs(prev(t)) != "null0"  & EMAIL_OUT_BodyBlobURN_obs(t) == EMAIL_OUT_BodyBlobURN_obs(prev(t)) & EMAIL_OUT_BodyBlobURN_obs(prev(t)) != "null0"  & EMAIL_OUT_Timestamp_obs(t) == EMAIL_OUT_Timestamp_obs(prev(t)) & EMAIL_OUT_Timestamp_obs(prev(t)) != "null0"  & EMAIL_OUT_Subject_obs(t) == EMAIL_OUT_Subject_obs(prev(t)) & EMAIL_OUT_Subject_obs(prev(t)) != "null0" 
+				 then true
+			else if state(t) == CreateContentOnline & true
+				then true
+			else false
+		else false
+;
